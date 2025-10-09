@@ -1,11 +1,15 @@
 const express = require("express");
 const app = express();
 require('dotenv').config()
+const cors = require("cors");
+app.use(cors());
 const port = 3000;
 const dbConnect = require("./utils/db");
 const userRouter = require("./router/user.router")
+const productRouter = require("./router/product.router")
 app.use(express.json());
-app.use("/api/users",userRouter);
+app.use("/api/auth",userRouter);
+app.use("/api/products",productRouter)
 
 
 dbConnect();

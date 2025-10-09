@@ -7,10 +7,15 @@ import {
   Container,
   Paper,
 } from "@mui/material";
+import { apiCall } from "../../utils/apiCall";
+import { ENDPOINTS } from "../../utils/endpoint";
+import { HTTP_METHODS, ROUTES } from "../../utils/constant";
+import { useNavigate } from "react-router-dom";
 
 export default function LogIn() {
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
   const validate = () => {
     let temp = { email: "", password: "" };
@@ -29,11 +34,21 @@ export default function LogIn() {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     if (validate()) {
       // Submit logic here
-      alert("Login successful!");
+      const res = await apiCall(ENDPOINTS.LOGIN,HTTP_METHODS.POST,values)
+      if(res.status===200){
+        setValues({email:"",password:""});
+        setErrors({email:"",password:""});
+        localStorage.setItem("token",res.data.token);
+        localStorage.setItem("user",JSON.stringify(res.data.user));
+        navigate(ROUTES.HOME);
+      }
+      else{
+        alert(res.data.message);
+      }
     }
   };
 

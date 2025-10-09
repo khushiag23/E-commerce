@@ -11,7 +11,7 @@ const register = async (req, res) => {
       // Email is valid
       const userExists = await User.findOne({ email: userData.email });
       if (userExists) {
-        return res.status(400).send("User already exists");
+        return res.status(400).json({message: "User already exists"});
       }
       const hashedPassword = bcrypt.hashSync(userData.password, 10);
       console.log(hashedPassword);
@@ -21,13 +21,13 @@ const register = async (req, res) => {
         password: hashedPassword,
       });
       await newUser.save();
-      res.status(201).send("User registered successfully");
+      res.status(201).json({message: "User registered successfully"});
     } else {
-      return res.status(400).send("Invalid email format");
+      return res.status(400).json({message: "Invalid email format"});
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).send("Internal Server Error");
+    return res.status(500).json({message: "Internal Server Error"});
   }
 };
 
@@ -36,17 +36,17 @@ const login = async (req, res) => {
         const { email, password} = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).send("User not found");
+            return res.status(400).json({message: "User not found"});
         }        
         const isPasswordValid = bcrypt.compareSync(password, user.password);
         if (!isPasswordValid) {
-            return res.status(400).send("Invalid password");
+            return res.status(400).json({message: "Invalid password"});
         }
         const token = JWT.sign({ id: user._id, isAdmin: user.isAdmin },process.env.JWT_SECRET);
         return res.status(200).json({ message: "Login successful", token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
     } catch (error) {
         console.error(error);
-        return res.status(500).send("Internal Server Error");
+        return res.status(500).json({message: "Internal Server Error"});
     }
 };
 module.exports = { register, login };
