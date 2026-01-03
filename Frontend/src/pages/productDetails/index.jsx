@@ -1,5 +1,5 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
+import { useState , useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -10,17 +10,28 @@ import {
   Paper,
   Container,
 } from "@mui/material";
+import { productService } from "../../service/productService";
 
 export default function ProductDetails() {
   // Assuming product data is passed via location.state from the product list page
-  const location = useLocation();
-  const product = location.state?.product || {
-    name: "Sample Product",
-    description: "This is a sample product description.",
-    price: 99.99,
-    image:
-      "https://via.placeholder.com/300x200.png?text=Product+Image",
-  };
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      const ProductDetails = await productService.getProductById(id);
+      setProduct(ProductDetails);
+      setLoading(false);
+    };
+    fetchProductDetails();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -30,7 +41,11 @@ export default function ProductDetails() {
             component="img"
             image={product.image}
             alt={product.name}
-            sx={{ width: { xs: "100%", md: 300 }, height: 200, objectFit: "cover" }}
+            sx={{
+              width: { xs: "100%", md: 300 },
+              height: 200,
+              objectFit: "cover",
+            }}
           />
           <CardContent sx={{ flex: 1 }}>
             <Typography variant="h4" gutterBottom>

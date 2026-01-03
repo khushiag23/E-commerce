@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { flowerCategories } = require("../utils/constants");
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -18,6 +19,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    enum: flowerCategories,
   },
   stock: {
     type: Number,

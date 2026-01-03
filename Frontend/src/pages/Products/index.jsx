@@ -1,58 +1,102 @@
-import React, { useState } from "react";
-import { Box, Grid, TextField, Select, MenuItem, InputLabel, FormControl, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Grid,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Typography,
+} from "@mui/material";
 import { ProductCard } from "../../components/Card";
-
-// Sample product data
-const productsData = [
-  { id: 1, name: "T-shirt", category: "Clothing", price: 499, image: "https://via.placeholder.com/150?text=T-shirt" },
-  { id: 2, name: "Shoes", category: "Footwear", price: 1299, image: "https://via.placeholder.com/150?text=Shoes" },
-  { id: 3, name: "Watch", category: "Accessories", price: 1999, image: "https://via.placeholder.com/150?text=Watch" },
-  { id: 4, name: "Jeans", category: "Clothing", price: 899, image: "https://via.placeholder.com/150?text=Jeans" },
-];
-
-const categories = ["All", "Clothing", "Footwear", "Accessories"];
+import { useProductsHook } from "../../hooks/productsHook";
+import { useNavigate } from "react-router-dom";
+import { productService } from "../../service/productService";
 
 export default function Products() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
   const [filter, setFilter] = useState("All");
+  const [products, setProducts] = useState([]);
 
-  // Filter products by category
-  let filteredProducts = filter === "All"
-    ? productsData
-    : productsData.filter(p => p.category === filter);
+  const { categories } = useProductsHook();
+  const navigate = useNavigate();
 
-  // Search products by name
-  filteredProducts = filteredProducts.filter(p =>
+  let filteredProducts =
+    filter === "All" ? products : products.filter((p) => p.category === filter);
+
+  filteredProducts = filteredProducts.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Sort products by price
-  if (sort === "lowToHigh") {
-    filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price);
-  } else if (sort === "highToLow") {
-    filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
-  }
+  useEffect(() => {
+    if (window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get("category") || "All";
+      const sort = params.get("sort") || "";
+      const search = params.get("search") || "";
+      setFilter(category);
+      setSort(sort);
+      setSearch(search);
+    }
+    fetchFilteredProducts();
+  }, [search, filter, sort]);
+
+  const fetchFilteredProducts = async () => {
+    let query = [];
+    if (search) query.push(`search=${search}`);
+    if (filter && filter !== "All") query.push(`category=${filter}`);
+    if (sort) query.push(`sort=${sort==="lowToHigh"?"asc":"desc"}`);
+    const queryString = query.join("&");
+    const products = await productService.getFilteredProducts(queryString)
+    console.log(products , "filtered products");
+    setProducts(products);
+
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.trim();
+    setSearch(value);
+    setParams("search", value);
+  };
+
+  const setParams = (key, value) => {
+    const params = new URLSearchParams(window.location.search);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    navigate(`?${params.toString()}`);
+  };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>Shop</Typography>
+      <Typography variant="h4" gutterBottom>
+        Shop
+      </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         <TextField
           label="Search"
           variant="outlined"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={handleSearch}
         />
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Category</InputLabel>
           <Select
             value={filter}
             label="Category"
-            onChange={e => setFilter(e.target.value)}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setParams("category", e.target.value);
+            }}
           >
-            {categories.map(cat => (
-              <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -61,7 +105,10 @@ export default function Products() {
           <Select
             value={sort}
             label="Sort"
-            onChange={e => setSort(e.target.value)}
+            onChange={(e) => {
+              setSort(e.target.value);
+              setParams("sort", e.target.value);
+            }}
           >
             <MenuItem value="">None</MenuItem>
             <MenuItem value="lowToHigh">Price: Low to High</MenuItem>
@@ -75,7 +122,7 @@ export default function Products() {
             <Typography>No products found.</Typography>
           </Grid>
         ) : (
-          filteredProducts.map(product => (
+          filteredProducts.map((product) => (
             <Grid item xs={12} sm={6} md={4} key={product.id}>
               <ProductCard product={product} />
             </Grid>

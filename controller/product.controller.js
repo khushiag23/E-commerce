@@ -1,4 +1,5 @@
 const Product = require("../model/product.model");
+const { flowerCategories } = require("../utils/constants");
 
 const uploadProduct = async (req, res) => {
   try {
@@ -16,7 +17,21 @@ const uploadProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const {
+      search = "",
+      sort = "asc",
+      page = 1,
+      limit = 10,
+      category = "all",
+    } = req.query;
+    const query = {
+      name: { $regex: search, $options: "i" },
+      category: category.toLowerCase() === "all" ? { $exists: true } : category,
+    };
+    const products = await Product.find(query)
+      .sort({ price: sort === "asc" ? 1 : -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
     res.status(200).json(products);
   } catch (error) {
     console.log(error);
@@ -74,10 +89,22 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getAllCategories = async (req, res) => {
+  try {
+    // const categories = await Product.distinct("category");
+
+    res.status(200).json({ categories: flowerCategories });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   uploadProduct,
   getAllProducts,
   getProductById,
   updateProduct,
   deleteProduct,
+  getAllCategories,
 };
