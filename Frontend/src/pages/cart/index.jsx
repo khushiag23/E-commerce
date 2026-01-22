@@ -13,47 +13,57 @@ import {
   IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-// Sample cart items
-const initialCart = [
-  {
-    id: 1,
-    name: "T-shirt",
-    price: 499,
-    image: "https://via.placeholder.com/50?text=T-shirt",
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Shoes",
-    price: 1299,
-    image: "https://via.placeholder.com/50?text=Shoes",
-    quantity: 2,
-  },
-];
+import { useEffect } from "react";
+import { cartService } from "../../service/cartService";
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 export default function Cart() {
-  const [cart, setCart] = useState(initialCart);
+  const [cart, setCart] = useState([]);
 
-  const handleRemove = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+  console.log(cart,"cart");
+
+  useEffect(()=>{
+    getCart();
+  },[])
+
+  const getCart = async () => {
+    const res = await cartService.getCart();
+    setCart(res.data.cart.products);
   };
 
-  const handleQuantityChange = (id, delta) => {
-    setCart(
-      cart.map((item) =>
-        item.id === id
+  const handleRemove = async (id) => {
+    setCart(cart.filter((item) => item._id !== id));
+     const res = await cartService.removeItem(id);
+     if(res.status === 200) {
+      alert(res.data.message);
+     } else {
+      alert(res.data.message);
+     }
+  };
+
+  const handleQuantityChange = async (id, delta) => {  
+    const updatedCart = cart.map((item) =>{
+      const updatedQuantity = Math.max(1, item.quantity + delta);
+        return item._id === id
           ? {
               ...item,
-              quantity: Math.max(1, item.quantity + delta),
+              quantity: item.productId.stock > updatedQuantity ? updatedQuantity : item.productId.stock,
             }
           : item
-      )
-    );
+      })
+    setCart(updatedCart);
+    const product = updatedCart.find((item) => item._id === id)
+    const res = await cartService.updateCart(product.productId._id,product.quantity)
+    // if(res.status === 200) {
+    //   alert(res.data.message);
+    //  } else {
+    //   alert(res.data.message);
+    //  }
   };
 
   const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.productId.price * item.quantity,
     0
   );
 
@@ -69,32 +79,30 @@ export default function Cart() {
         ) : (
           <List>
             {cart.map((item) => (
-              <ListItem key={item.id} sx={{ alignItems: "flex-start" }}>
+              <ListItem key={item._id} sx={{ alignItems: "flex-start" }}>
                 <ListItemAvatar>
-                  <Avatar src={item.image} alt={item.name} />
+                  <Avatar src={item.productId.image} alt={item.productId.name} />
                 </ListItemAvatar>
                 <ListItemText
-                  primary={item.name}
-                  secondary={`Price: ₹${item.price} | Quantity: ${item.quantity}`}
+                  primary={item.productId.name}
+                  secondary={`Price: ₹${item.productId.price} | Quantity: ${item.quantity}`}
                 />
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Button
-                    size="small"
-                    onClick={() => handleQuantityChange(item.id, -1)}
+                    onClick={() => handleQuantityChange(item._id, -1)}
                   >
-                    -
+                   <RemoveIcon />
                   </Button>
                   <Typography>{item.quantity}</Typography>
                   <Button
-                    size="small"
-                    onClick={() => handleQuantityChange(item.id, 1)}
+                    onClick={() => handleQuantityChange(item._id, 1)}
                   >
-                    +
+                    <AddIcon />
                   </Button>
                   <IconButton
                     edge="end"
                     color="error"
-                    onClick={() => handleRemove(item.id)}
+                    onClick={() => handleRemove(item._id)}
                   >
                     <DeleteIcon />
                   </IconButton>

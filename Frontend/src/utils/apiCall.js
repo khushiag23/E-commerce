@@ -6,8 +6,12 @@ export const apiCall = async (endpoint, method=HTTP_METHODS.GET, data=null) => {
         const response = await axios({
             url: BASE_URL + endpoint,
             method,
-            data
+            data,
+            headers:{
+                token:localStorage.getItem("token")
+            }
         });
+        console.log(response,"response");
         return response;
     } catch (error) {
         console.error("API call error:", error);

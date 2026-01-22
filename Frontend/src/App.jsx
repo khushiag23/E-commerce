@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import { Navbar } from "./components/Navbar";
-// import { ProductCard } from "./components/Card";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Home from "./pages/home";
 import SignUp from "./pages/signup";
@@ -12,10 +11,7 @@ import Layout from "./components/Layout";
 import Cart from "./pages/cart";
 import { ROUTES } from "./utils/constant";
 import { ThemeProvider, createTheme } from "@mui/material/styles"; // Add these imports
-import { Dropdown } from "./components/Dropdown";
-import ProductList from "./components/productList";
 
-import  ProductCard  from "./components/productCard";
 
 const theme = createTheme({
   palette: {
@@ -55,11 +51,6 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-      {/* <div style={{padding:"20px"}}>
-      <ProductCard/></div> */}
-      {/* <Dropdown value={value} onChange={e => {setValue(e.target.value)}} /> */}
-        {/* <ProductList/> */}
-        {/* <ProductCard product={{ title: "Sample Product", description: "This is a sample product.", price: 99.99 }}/> */}
     </ThemeProvider>
     
   );

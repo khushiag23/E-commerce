@@ -8,16 +8,36 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../utils/constant";
 import { CustomButton } from "./button";
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import { cartService } from "../service/cartService";
 
 
 export function ProductCard({ product }) {
   const navigate = useNavigate();
+
+  
+  const handleAddToCart = async () => {
+    try {
+     const res = await cartService.addToCart(product._id, 1);
+     console.log(res,"res");
+     if(res.status === 200) {
+      alert('Added to cart successfully!');
+     } else {
+      alert('Failed to add to cart');
+     }
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      alert('Failed to add to cart');
+    }
+  };
+
   return (
     <Card
-      onClick={() => navigate(ROUTES.PRODUCTS + "/" + product._id)}
       sx={{ maxWidth: 320 }}
     >
-      <CardActionArea>
+      <CardActionArea
+      onClick={() => navigate(ROUTES.PRODUCTS + "/" + product._id)}
+      
+      >
         <CardMedia
           component="img"
           height="320"
@@ -37,7 +57,7 @@ export function ProductCard({ product }) {
           </Typography>
         </CardContent>
       </CardActionArea>
-      <CustomButton>
+      <CustomButton onClick={handleAddToCart}>
         <ShoppingCartOutlinedIcon fontSize="medium" />
         Add to Cart
       </CustomButton>

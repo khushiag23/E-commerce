@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 require('dotenv').config()
 const cors = require("cors");
+const path = require("path");
 app.use(cors());
 const port = 3000;
 const dbConnect = require("./utils/db");
@@ -11,6 +12,8 @@ const userRouter = require("./router/user.router")
 const productRouter = require("./router/product.router")
 const cartRouter = require("./router/cart.router")
 const orderRouter = require("./router/order.router")
+const uploadFile = require("./middleware/uploadFile")
+
 
 
 app.use(express.json());
@@ -18,11 +21,17 @@ app.use("/api/auth",userRouter);
 app.use("/api/products",productRouter)
 app.use("/api/cart",cartRouter)
 app.use("/api/orders",orderRouter)
+app.use("/public",express.static(path.join(__dirname,"public")))
 
 
 dbConnect();
 
 app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.post("/upload",uploadFile.single("image"), (req, res) => {
+  console.log(req.file);
   res.send("Hello World!");
 });
 

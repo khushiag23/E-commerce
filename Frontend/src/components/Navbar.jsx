@@ -17,7 +17,7 @@ import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import { ROUTES } from "../utils/constant";
 
 const pages = ["Products"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const settings = ["Profile", "Logout"];
 
 export function Navbar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -43,8 +43,21 @@ export function Navbar() {
     }
   };
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = (key) => {
     setAnchorElUser(null);
+    
+    // Handle different menu options
+    switch (key) {
+      case "Profile":
+        navigate(ROUTES.PROFILE);
+        break;
+      case "Logout":
+        localStorage.clear();
+        navigate(ROUTES.HOME);
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -165,7 +178,7 @@ export function Navbar() {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem key={setting} onClick={()=>handleCloseUserMenu(setting)}>
                   <Typography sx={{ textAlign: "center" }}>
                     {setting}
                   </Typography>

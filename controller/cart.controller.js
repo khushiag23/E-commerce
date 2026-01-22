@@ -50,6 +50,7 @@ const updateCart = async (req, res) => {
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
+    console.log(cart.products,"cart11");
     const productIndex = cart.products.findIndex(
       (p) => p.productId.toString() === productId
     );
@@ -68,20 +69,17 @@ const updateCart = async (req, res) => {
 const removeFromCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId } = req.body;
-        const cart = await Cart.findOne({ userId });
-        if (!cart) {
-            return res.status(404).json({ message: "Cart not found" });
-        }
-        const productIndex = cart.products.findIndex(
-            (p) => p.productId.toString() === productId
+        const {id} = req.params;
+        const deletedCart = await Cart.findOne({userId});
+        const productIndex = deletedCart.products.findIndex(
+            (p) => p.productId.toString() === id
         );
-        if (productIndex === -1) {
-            return res.status(404).json({ message: "Product not found in cart" });
+        deletedCart.products.splice(productIndex, 1);
+        await deletedCart.save();
+        if (!deletedCart) {
+            return res.status(404).json({ message: "Cart item not found" });
         }
-        cart.products.splice(productIndex, 1);
-        await cart.save();
-        return res.status(200).json({ message: "Product removed from cart successfully" });
+        return res.status(200).json({ message: "Cart item removed successfully"});
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal Server Error" });

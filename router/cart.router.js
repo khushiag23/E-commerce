@@ -5,6 +5,6 @@ const authorize = require('../middleware/authorize');
 cartRouter.get("/", authorize,cartController.getCart);
 cartRouter.post("/", authorize,cartController.addToCart);
 cartRouter.put("/", authorize,cartController.updateCart);
-cartRouter.delete("/", authorize,cartController.removeFromCart);
+cartRouter.delete("/:id", authorize,cartController.removeFromCart);
 
 module.exports = cartRouter;
